@@ -178,3 +178,63 @@ $('#year').textContent = new Date().getFullYear();
   langBtn.addEventListener('click', () => setTimeout(label, 0));
   label();
 })();
+
+/* FAQ + scripted assistant (same content, single source) */
+(() => {
+  const LI = '<a href="https://www.linkedin.com/in/enriquepalacios24/" target="_blank" rel="noopener">LinkedIn</a>';
+  const QA = [
+    { q: ['¿Estás disponible para nuevas oportunidades?', 'Are you open to new opportunities?'], s: ['¿Estás disponible?', 'Are you available?'],
+      a: ['Sí, estoy abierto a conversar sobre roles de ML Engineer, MLOps, GenAI y Data Science, y a proyectos como consultor. <a href="#contact">Escríbeme</a>.', 'Yes, I am open to talking about ML Engineer, MLOps, GenAI and Data Science roles, and consulting projects. <a href="#contact">Write to me</a>.'] },
+    { q: ['¿Desde dónde trabajas y en qué zona horaria?', 'Where are you based and what time zone?'], s: ['Zona horaria', 'Time zone'],
+      a: ['Vivo en Lima, Perú (UTC−5, sin cambio de horario). Trabajo cómodo con equipos de Latinoamérica y Norteamérica.', 'I am in Lima, Peru (UTC−5, no daylight saving). I work comfortably with teams across Latin America and North America.'] },
+    { q: ['¿Remoto, híbrido o presencial?', 'Remote, hybrid or on-site?'], s: ['Remoto o híbrido', 'Remote or hybrid'],
+      a: ['Remoto o híbrido en Lima. Hoy trabajo en modalidad híbrida y tengo experiencia en equipos remotos.', 'Remote or hybrid in Lima. I currently work hybrid and I have experience on remote teams.'] },
+    { q: ['¿En qué industrias has trabajado?', 'Which industries have you worked in?'], s: ['Industrias', 'Industries'],
+      a: ['Telecomunicaciones (Entel), seguros (Pacífico Seguros), banca (análisis de crédito), educación (LIIDIA Lab) e inmobiliario (Golz).', 'Telecom (Entel), insurance (Pacífico Seguros), banking (credit analysis), education (LIIDIA Lab) and real estate (Golz).'] },
+    { q: ['¿Con qué stack trabajas?', 'What stack do you work with?'], s: ['Stack', 'Stack'],
+      a: ['Python, SQL, scikit-learn, PyTorch, Spark, Databricks, MLflow, Airflow, Docker, Azure y AWS; para GenAI, LangChain y LangGraph. Mira las <a href="#skills">skills</a>.', 'Python, SQL, scikit-learn, PyTorch, Spark, Databricks, MLflow, Airflow, Docker, Azure and AWS; for GenAI, LangChain and LangGraph. See the <a href="#skills">skills</a>.'] },
+    { q: ['¿Cómo te contacto?', 'How can I reach you?'], s: ['Contacto', 'Contact'],
+      a: [`Usa el <a href="#contact">formulario</a>, escríbeme por ${LI} o por correo. Respondo normalmente en 1 o 2 días.`, `Use the <a href="#contact">form</a>, message me on ${LI} or email. I usually reply within 1–2 days.`] }
+  ];
+  const EXTRA = [
+    { s: ['Experiencia', 'Experience'],
+      a: ['Hoy soy Machine Learning Engineer en Entel (desde sep 2025). Antes fui Data Analyst y Data Scientist Trainee en Pacífico Seguros. Mira la <a href="#experience">experiencia</a>.', 'I am a Machine Learning Engineer at Entel (since Sep 2025). Before that I was a Data Analyst and Data Scientist Trainee at Pacífico Seguros. See the <a href="#experience">experience</a>.'] },
+    { s: ['Proyectos', 'Projects'],
+      a: ['Tengo 3 sitios en vivo (LIIDIA Lab, Golz Real Estate, Rokkan Concret) y proyectos de MLOps, deep learning y data engineering en <a href="#projects">Proyectos</a>.', 'I have 3 live sites (LIIDIA Lab, Golz Real Estate, Rokkan Concret) plus MLOps, deep learning and data engineering projects in <a href="#projects">Projects</a>.'] },
+    { s: ['Descargar CV', 'Download CV'],
+      a: ['Puedes descargarlo con el botón <b>Descargar CV</b> de la <a href="#top">parte superior</a>.', 'You can get it with the <b>Download CV</b> button at the <a href="#top">top</a>.'] }
+  ];
+  const en = () => document.documentElement.lang === 'en';
+  const L = a => a[en() ? 1 : 0];
+  const attr = s => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+
+  /* FAQ accordion */
+  $('#faqList').innerHTML = QA.map((x, i) =>
+    `<details${i ? '' : ' open'}><summary data-es="${attr(x.q[0])}" data-en="${attr(x.q[1])}">${x.q[0]}</summary><p data-es="${attr(x.a[0])}" data-en="${attr(x.a[1])}">${x.a[0]}</p></details>`).join('');
+  setLang(document.documentElement.lang);
+
+  /* chat */
+  const fab = $('#chatFab'), box = $('#chat'), log = $('#chatLog'), qs = $('#chatQ');
+  const all = [...EXTRA, ...QA];
+  const add = (cls, html) => { const d = document.createElement('div'); d.className = 'msg ' + cls; d.innerHTML = html; log.appendChild(d); log.scrollTop = log.scrollHeight; };
+  const start = () => {
+    log.innerHTML = '';
+    add('bot', en() ? 'Hi! I am Enrique\'s quick assistant. Pick a question:' : '¡Hola! Soy el asistente rápido de Enrique. Elige una pregunta:');
+    qs.innerHTML = all.map((x, i) => `<button data-i="${i}">${L(x.s)}</button>`).join('');
+  };
+  let started = false;
+  const open = v => {
+    box.hidden = !v; fab.setAttribute('aria-expanded', v);
+    if (v && !started) { started = true; start(); }
+  };
+  fab.addEventListener('click', () => open(box.hidden));
+  $('#chatX').addEventListener('click', () => open(false));
+  qs.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const x = all[+b.dataset.i];
+    add('me', L(x.s));
+    setTimeout(() => add('bot', L(x.a)), 250);
+  });
+  log.addEventListener('click', e => { if (e.target.closest('a[href^="#"]') && innerWidth < 560) open(false); });
+  langBtn.addEventListener('click', () => setTimeout(() => { if (started) start(); }, 0));
+})();
