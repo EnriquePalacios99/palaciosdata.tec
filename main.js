@@ -96,10 +96,15 @@ $('#form').addEventListener('submit', async e => {
     say('¡Mensaje enviado! Te responderé pronto.', 'Message sent! I will reply soon.', true);
   } catch (err) {
     const body = `${f.get('msg')}\n\n— ${f.get('name')} (${f.get('email')})`;
-    const href = `mailto:${CONTACT_TO}?subject=${encodeURIComponent('Contacto desde el portafolio')}&body=${encodeURIComponent(body)}`;
-    status.innerHTML = (en ? 'Could not send automatically. ' : 'No se pudo enviar automáticamente. ')
-      + `<a href="${href}">${en ? 'Send it from your email app' : 'Envíalo desde tu correo'}</a>`;
+    const subj = 'Contacto desde el portafolio';
+    const href = `mailto:${CONTACT_TO}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+    const web = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(CONTACT_TO)}&subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+    console.warn('Contact form fallback:', err);
+    status.innerHTML = (en ? 'Opening your email app… If nothing opens: ' : 'Abriendo tu correo… Si no se abre: ')
+      + `<a href="${href}">${en ? 'email app' : 'app de correo'}</a> · `
+      + `<a href="${web}" target="_blank" rel="noopener">Outlook web</a>`;
     status.dataset.ok = '0';
+    location.href = href;                       // open the default mail app (e.g. Outlook) automatically
   } finally {
     btn.disabled = false; btn.textContent = label;
   }
